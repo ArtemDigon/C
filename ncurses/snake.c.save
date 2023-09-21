@@ -1,0 +1,125 @@
+#include <stdlib.h>
+#include <curses.h>
+#include <stdio.h>
+#include <time.h>
+
+typedef struct XY {
+	int x;
+	int y;
+} XY;
+
+int x = 2;
+int y = 2;
+int snakeSize = 1; 
+
+int  moveSnake (int map[COLS][LINES],int  move) {
+        if (move == 0) {
+                y =  (y + LINES - 1) % LINES; }
+        if (move == 1) {
+                y =  (y + 1) % LINES; }
+        if (move == 2) {
+                x = (x + COLS - 1) % COLS; }
+        if (move == 3) {
+                x = (x + 1) % COLS; }
+        if (map[x][y] == '*') {
+                return 1;
+        }
+        else {
+                return 0;
+        }
+}
+	
+
+void moveBody (int map[COLS][LINES], XY* body) {
+	XY del = body[snakeSize-1];
+	for (int i = 0; i < snakeSize - 1; i++) {
+		body[snakeSize - i - 1] = body[snakeSize - i - 2];
+	}
+	body[0].x = x;
+	body[0].y = y;
+	map[del.x][del.y] = ' ';
+	for (int i = 0;i < snakeSize; i++) {
+		map[body[i].x][body[i].y] = '*';
+	}
+	
+}
+
+void spawnFood (int map[COLS][LINES]) {
+	int x = 0;
+	int y = 0;
+        x = rand()%(COLS - 1);
+        y = rand()%(LINES - 1);
+        map[x][y] = 'O';
+}
+
+void getmap (int  map[COLS][LINES]){
+        for (int i = 0; i < COLS;i++) {
+                for (int j = 0;j < LINES;j++){
+                        map[i][j] = ' ';
+                }
+        }
+}
+void tick (int  map[COLS][LINES]){
+        for (int i = 0; i < COLS;i++) {
+                for (int j = 0;j < LINES;j++){
+                        mvaddch(j,i,map[i][j]);
+                }
+        }
+}
+int main(int argc, char* argv[]) {
+srand(time(NULL));
+if (NULL == initscr()) {
+    printf("hello");
+ }
+noecho();// запрещает вывод на экран символов
+curs_set(0);// убирает курсор
+XY body[1000];
+body[0].x = 1;
+body[0].y = 2;
+
+int map[COLS][LINES];
+getmap (map);
+int sw = 3;
+int nsw = 3;
+int ch;
+halfdelay(1);
+keypad(stdscr, TRUE);
+spawnFood(map);
+do {
+map[x][y] = ' ';
+
+switch (ch) {
+        case KEY_UP:
+                sw = 0;
+                break;
+        case KEY_DOWN:
+                sw = 1;
+                break;
+        case KEY_RIGHT:
+                sw = 3;
+                break;
+        case KEY_LEFT:
+                sw = 2;
+                break;
+}
+moveBody(map,body);
+if (moveSnake(map,sw,) == 1)
+	break;
+if (map[x][y] == 'O'){
+	spawnFood(map);
+	snakeSize++;
+	body[snakeSize - 1].x = x;
+	body[snakeSize - 1].y = y;
+}
+	
+map[x][y] = 'D';
+tick (map);
+refresh();
+} while ('q' != (ch  = getch()));
+
+
+endwin();
+
+return 0;
+}
+
